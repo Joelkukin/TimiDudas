@@ -1,0 +1,10 @@
+{
+    "config":{
+        "SQLDataLogin":{
+            "url":"localhost",
+            "username":"root",
+            "password":"",
+            "database":"simple_php_api"
+        }
+    }
+}
