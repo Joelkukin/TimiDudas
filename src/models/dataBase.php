@@ -1,8 +1,7 @@
 <?php
 # 
-
 #creo la interfaz de base de datos
-class DB{
+class DataBase{
     private $url; // url de base de datos
     private $username; // usuario de base de datos
     private $password; // contraseña de base de datos
@@ -43,53 +42,35 @@ class DB{
         $this->conexion;
     }
 
-    # ver los items (...)
-    function getItems(...$id){    
-    # traeme todos los items que tengan estas id's
-
-        # si $id tiene más de un numero pedir solo un item, sino pedir varios
-        if (count($id) == 1){// si el array tiene más de un nro
-            $consulta = "SELECT nombre, codigo FROM ".$this->tabla." WHERE id = ".$id[0]; // hacé esta consulta
-        } else{ # si $id son varios elementos entonces...
-            foreach ($id as $value) { //  ... si de todos los valores del id ...
-                if (!is_int($value)) { // ... hay alguno que no es un nro ...
-                    die("todos los valores deben ser numeros enteros"); // ... tirá este error.
-                } // sino seguí con lo demas
-            }
-            // si no tira error significa que se puede ejecutar la consulta
-            $consulta = "SELECT id, nombre, codigo FROM ".$this->tabla." WHERE id IN(".implode(",",$id).")"; // armo la consulta
-            $result = $this->conexion->query($consulta); // ejecutar consulta sql y guardar en $resp
-            # si la consulta devolvió al menos una fila, ejecutá el siguiente codigo...
-            if ($result->num_rows > 0) {
-                # guardar en row un array asociativo con el contenido de las celdas de la siguiente fila, repite ésto hasta que no queden más filas con datos por guardar
-                while($row = $result->fetch_assoc()){ // por cada fila que haya, se agrega al array $row
-                    $this->items[] = $row;
-                } 
-            }
+    function consultaPrep($consulta, $types, $params = array()){ # LISTA
+        //objeto Consulta = stmt
+        $stmt = $this->conexion->prepare($consulta); // ejecutar consulta sql y guardar en $resp
+        if ($stmt === false) {
+            throw new Exception("Error al preparar la consulta: " . $this->conexion->error);
         }
-       
-        return $this->items;
-            /* El bucle while se utiliza en lugar de foreach en este caso debido a cómo funciona el método fetch_assoc().
     
-            El método fetch_assoc() de un objeto de resultado de base de datos devuelve la siguiente fila de resultados 
-            como un array asociativo cada vez que se llama. Si no hay más filas, devuelve null. 
-            */
-            /* Por lo tanto, puedes usarlo en una declaración while para seguir obteniendo y procesando filas hasta que no haya más. Esto es útil cuando trabajas con grandes conjuntos de resultados, ya que solo necesitas tener una fila en memoria a la vez.
+        // Transforma los elementos de params en referencias
+        $params_ref = array();
+        foreach($params as $key => $value) {
+            $params_ref[$key] = &$params[$key];
+        }
+    
+        // Llama a bind_param con los parámetros en un array
+        call_user_func_array(array($stmt, 'bind_param'), array_merge(array($types), $params_ref));
+    
+        if (!$stmt->execute()) {
+            throw new Exception("Error al ejecutar la consulta: " . $stmt->error);
+        }
+    
+        $result = $stmt->get_result();
         
-            Por otro lado, foreach se utiliza para recorrer elementos de un array que ya está completamente definido y disponible en memoria. No funcionaría con el método fetch_assoc() porque este método no devuelve un array completo de resultados, sino una sola fila de resultados a la vez. */
-            
-            /* imprimir cada item uno debado del otro */
-    }
-
-    function search($condicion,$traer){
-        /* buscar todos los items que cumplan con la condición */
-        /* $traer tiene que ser un campo de */
-
+        // Fetch all data
+        $data = array();
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+        
+        return json_encode($data);
     }
 }
-
-    $tablaItems = new DB("items");
-    $result= $tablaItems->getItems(1,2,3,5,6);
-    echo "\$DataBase return: ";
-    var_dump($result);// devuelve un array
 ?>
