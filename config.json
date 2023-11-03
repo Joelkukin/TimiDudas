@@ -4,7 +4,11 @@
             "url":"localhost",
             "username":"root",
             "password":"",
-            "database":"simple_php_api"
+            "database":"timidudas"
         }
+    },
+    "clases":{
+        "tabla":"",
+        "filas":""
     }
 }

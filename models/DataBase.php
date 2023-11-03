@@ -73,4 +73,7 @@ class DataBase{
         return json_encode($data);
     }
 }
+$baseDatos= new DataBase("clases");
+$baseDatos->consultaPrep("SELECT titulo FROM clases WHERE id_clase in (?,?)","ii",[1,10]);
+var_dump($baseDatos);
 ?>

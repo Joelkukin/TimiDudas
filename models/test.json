@@ -1,0 +1,7 @@
+{"BaseDatos":{
+    "url":"localhost",
+    "usuario":"root",
+    "contrasena":"",
+    "tabla":"json"
+    }
+}
